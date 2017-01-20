@@ -211,7 +211,7 @@ LIBRARIES :=
 
 # Makefile include to help find GL Libraries
 TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-include $(TOP)/../../findgllib.mk
+include $(TOP)/../../common/findgllib.mk
 
 # OpenGL specific libraries
 ifeq ($(TARGET_OS),darwin)

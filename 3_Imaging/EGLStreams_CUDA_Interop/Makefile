@@ -227,7 +227,7 @@ LIBRARIES :=
 
 # Makefile include to help find EGL Libraries
 TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-include $(TOP)/../../findegl.mk
+include $(TOP)/../../common/findegl.mk
 
 # EGL specific libraries
 ifneq ($(TARGET_OS),darwin)
