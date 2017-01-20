@@ -224,7 +224,8 @@ LIBRARIES :=
 ################################################################################
 
 # Makefile include to help find GLES Libraries
-include ./findgleslib.mk
+TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+include $(TOP)/../../findgleslib.mk
 
 # OpenGLES specific libraries
 ifneq ($(TARGET_OS),darwin)

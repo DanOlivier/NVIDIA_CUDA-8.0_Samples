@@ -232,7 +232,8 @@ LIBRARIES :=
 PTX_FILE := NV12ToARGB_drvapi${TARGET_SIZE}.ptx
 
 # Makefile include to help find GL Libraries
-include ./findgllib.mk
+TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+include $(TOP)/../../findgllib.mk
 
 # OpenGL specific libraries
 ifeq ($(TARGET_OS),darwin)

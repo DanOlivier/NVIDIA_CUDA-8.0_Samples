@@ -29,8 +29,8 @@
 #
 ################################################################################
 #
-#  findgllib.mk is used to find the necessary GL Libraries for specific distributions
-#               this is supported on Mac OSX and Linux Platforms
+#  findgleslib.mk is used to find the necessary GLES Libraries for specific distributions
+#               this is supported on Linux
 #
 ################################################################################
 
@@ -38,19 +38,16 @@
 ifeq ("$(TARGET_OS)","linux")
    # first search lsb_release
    DISTRO  = $(shell lsb_release -i -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
-   DISTVER = $(shell lsb_release -r -s 2>/dev/null)
    ifeq ("$(DISTRO)","")
      # second search and parse /etc/issue
      DISTRO = $(shell more /etc/issue | awk '{print $$1}' | sed '1!d' | sed -e "/^$$/d" 2>/dev/null | tr "[:upper:]" "[:lower:]")
-     DISTVER= $(shell more /etc/issue | awk '{print $$2}' | sed '1!d' 2>/dev/null)
      # ensure data from /etc/issue is valid
-     ifeq (,$(filter $(DISTRO),ubuntu fedora red rhel centos suse))
+     ifneq (,$(filter-out $(DISTRO),ubuntu fedora red rhel centos suse))
        DISTRO = 
      endif
      ifeq ("$(DISTRO)","")
        # third, we can search in /etc/os-release or /etc/{distro}-release
        DISTRO = $(shell awk '/ID/' /etc/*-release | sed 's/ID=//' | grep -v "VERSION" | grep -v "ID" | grep -v "DISTRIB")
-       DISTVER= $(shell awk '/DISTRIB_RELEASE/' /etc/*-release | sed 's/DISTRIB_RELEASE=//' | grep -v "DISTRIB_RELEASE")
      endif
    endif
 endif
@@ -59,11 +56,11 @@ ifeq ("$(TARGET_OS)","linux")
     # $(info) >> findgllib.mk -> LINUX path <<<)
     # Each set of Linux Distros have different paths for where to find their OpenGL libraries reside
     UBUNTU_PKG_NAME = "nvidia-367"
-        UBUNTU = $(shell echo $(DISTRO) | grep -i ubuntu      >/dev/null 2>&1; echo $$?)
-        FEDORA = $(shell echo $(DISTRO) | grep -i fedora      >/dev/null 2>&1; echo $$?)
-        RHEL   = $(shell echo $(DISTRO) | grep -i 'red\|rhel' >/dev/null 2>&1; echo $$?)
-        CENTOS = $(shell echo $(DISTRO) | grep -i centos      >/dev/null 2>&1; echo $$?)
-        SUSE   = $(shell echo $(DISTRO) | grep -i suse        >/dev/null 2>&1; echo $$?)
+    UBUNTU = $(shell echo $(DISTRO) | grep -i ubuntu      >/dev/null 2>&1; echo $$?)
+    FEDORA = $(shell echo $(DISTRO) | grep -i fedora      >/dev/null 2>&1; echo $$?)
+    RHEL   = $(shell echo $(DISTRO) | grep -i 'red\|rhel' >/dev/null 2>&1; echo $$?)
+    CENTOS = $(shell echo $(DISTRO) | grep -i centos      >/dev/null 2>&1; echo $$?)
+    SUSE   = $(shell echo $(DISTRO) | grep -i suse        >/dev/null 2>&1; echo $$?)
     ifeq ("$(UBUNTU)","0")
       ifeq ($(HOST_ARCH)-$(TARGET_ARCH),x86_64-armv7l)
         GLPATH := /usr/arm-linux-gnueabihf/lib
@@ -74,9 +71,6 @@ ifeq ("$(TARGET_OS)","linux")
           GLLINK += -L$(TARGET_FS)/usr/lib/$(UBUNTU_PKG_NAME)
           GLLINK += -L$(TARGET_FS)/usr/lib/arm-linux-gnueabihf
         endif 
-      else ifeq ($(HOST_ARCH)-$(TARGET_ARCH),x86_64-ppc64le)
-        GLPATH := /usr/powerpc64le-linux-gnu/lib
-        GLLINK := -L/usr/powerpc64le-linux-gnu/lib
       else
         GLPATH    ?= /usr/lib/$(UBUNTU_PKG_NAME)
         GLLINK    ?= -L/usr/lib/$(UBUNTU_PKG_NAME)
@@ -105,20 +99,20 @@ ifeq ("$(TARGET_OS)","linux")
     endif
   
   # find libGL, libGLU, libXi, 
-  GLLIB  := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libGL.so  -print 2>/dev/null)
-  GLULIB := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libGLU.so -print 2>/dev/null)
-  X11LIB := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libX11.so -print 2>/dev/null)
+  EGLLIB  := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libEGL.so    -print 2>/dev/null)
+  GLESLIB := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libGLESv2.so -print 2>/dev/null)
+  X11LIB  := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libX11.so    -print 2>/dev/null)
 
-  ifeq ("$(GLLIB)","")
-      $(info >>> WARNING - libGL.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
+  ifeq ("$(EGLLIB)","")
+      $(info >>> WARNING - libEGL.so not found, please install libEGL.so <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(GLULIB)","")
-      $(info >>> WARNING - libGLU.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
+  ifeq ("$(GLESLIB)","")
+      $(info >>> WARNING - libGLES.so not found, please install libGLES.so <<<)
       SAMPLE_ENABLED := 0
   endif
   ifeq ("$(X11LIB)","")
-      $(info >>> WARNING - libX11.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
+      $(info >>> WARNING - libX11.so not found, please install libX11.so <<<)
       SAMPLE_ENABLED := 0
   endif
 
@@ -127,23 +121,27 @@ ifeq ("$(TARGET_OS)","linux")
       HEADER_SEARCH_PATH += /usr/arm-linux-gnueabihf/include
   endif
 
-  GLHEADER  := $(shell find -L $(HEADER_SEARCH_PATH) -name gl.h -print 2>/dev/null)
-  GLUHEADER := $(shell find -L $(HEADER_SEARCH_PATH) -name glu.h -print 2>/dev/null)
+  EGLHEADER  := $(shell find -L $(HEADER_SEARCH_PATH) -name egl.h -print 2>/dev/null)
+  EGLEXTHEADER  := $(shell find -L $(HEADER_SEARCH_PATH) -name eglext.h -print 2>/dev/null)
+  GL31HEADER := $(shell find -L $(HEADER_SEARCH_PATH) -name gl31.h -print 2>/dev/null)
   X11HEADER := $(shell find -L $(HEADER_SEARCH_PATH) -name Xlib.h -print 2>/dev/null)
 
-  ifeq ("$(GLHEADER)","")
-      $(info >>> WARNING - gl.h not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
+  ifeq ("$(EGLHEADER)","")
+      $(info >>> WARNING - egl.h not found, please install egl.h <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(GLUHEADER)","")
-      $(info >>> WARNING - glu.h not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
+  ifeq ("$(EGLEXTHEADER)","")
+      $(info >>> WARNING - eglext.h not found, please install eglext.h <<<)
+      SAMPLE_ENABLED := 0
+  endif
+  ifeq ("$(GL31HEADER)","")
+      $(info >>> WARNING - gl31.h not found, please install gl31.h <<<)
       SAMPLE_ENABLED := 0
   endif
   ifeq ("$(X11HEADER)","")
-      $(info >>> WARNING - Xlib.h not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
+      $(info >>> WARNING - Xlib.h not found, refer to CUDA Samples release notes for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
 else
-    # This would be the Mac OS X path if we had to do anything special
 endif
 
