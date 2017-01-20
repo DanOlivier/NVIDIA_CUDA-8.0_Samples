@@ -230,43 +230,38 @@ endif
 
 ALL_CCFLAGS += -dc
 
-ifeq ($(SAMPLE_ENABLED),0)
-EXEC ?= @echo "[@]"
-endif
-
 ################################################################################
 
 # Target rules
 all: build
 
+ifeq ($(SAMPLE_ENABLED),0)
+build:
+	@echo "Sample will be waived due to missing dependencies"
+else
 build: simpleSeparateCompilation
 
-check.deps:
-ifeq ($(SAMPLE_ENABLED),0)
-	@echo "Sample will be waived due to the above missing dependencies"
-else
-	@echo "Sample is ready - all dependencies have been met"
-endif
-
 simpleDeviceLibrary.o:simpleDeviceLibrary.cu
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 simpleSeparateCompilation.o:simpleSeparateCompilation.cu
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 simpleDeviceLibrary.a:simpleDeviceLibrary.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) -lib -o $@ $< $(LIBRARIES)
+	@$(NVCC) $(ALL_LDFLAGS) -lib -o $@ $< $(LIBRARIES)
 
 simpleSeparateCompilation: simpleDeviceLibrary.a simpleSeparateCompilation.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	$(EXEC) cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 run: build
-	$(EXEC) ./simpleSeparateCompilation
+	@./simpleSeparateCompilation
 
 clean:
 	rm -f simpleSeparateCompilation simpleDeviceLibrary.o simpleSeparateCompilation.o simpleDeviceLibrary.a
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleSeparateCompilation
 
 clobber: clean
+
+endif

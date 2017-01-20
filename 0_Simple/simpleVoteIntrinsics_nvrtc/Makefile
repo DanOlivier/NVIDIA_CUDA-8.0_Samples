@@ -292,37 +292,32 @@ INCLUDES += -I$(CUDA_PATH)/include
 
 LIBRARIES += -lnvrtc
 
-ifeq ($(SAMPLE_ENABLED),0)
-EXEC ?= @echo "[@]"
-endif
-
 ################################################################################
 
 # Target rules
 all: build
 
+ifeq ($(SAMPLE_ENABLED),0)
+build:
+	@echo "Sample will be waived due to missing dependencies"
+else
 build: simpleVoteIntrinsics_nvrtc
 
-check.deps:
-ifeq ($(SAMPLE_ENABLED),0)
-	@echo "Sample will be waived due to the above missing dependencies"
-else
-	@echo "Sample is ready - all dependencies have been met"
-endif
-
 simpleVoteIntrinsics.o:simpleVoteIntrinsics.cpp
-	$(EXEC) $(HOST_COMPILER) $(INCLUDES) $(CCFLAGS) $(EXTRA_CCFLAGS) -o $@ -c $<
+	@$(HOST_COMPILER) $(INCLUDES) $(CCFLAGS) $(EXTRA_CCFLAGS) -o $@ -c $<
 
 simpleVoteIntrinsics_nvrtc: simpleVoteIntrinsics.o
-	$(EXEC) $(HOST_COMPILER) $(LDFLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	$(EXEC) cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	@$(HOST_COMPILER) $(LDFLAGS) -o $@ $+ $(LIBRARIES)
+	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 run: build
-	$(EXEC) ./simpleVoteIntrinsics_nvrtc
+	@./simpleVoteIntrinsics_nvrtc
 
 clean:
 	rm -f simpleVoteIntrinsics_nvrtc simpleVoteIntrinsics.o
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleVoteIntrinsics_nvrtc
 
 clobber: clean
+
+endif
