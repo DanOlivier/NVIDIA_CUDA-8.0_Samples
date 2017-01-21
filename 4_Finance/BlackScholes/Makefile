@@ -48,26 +48,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: BlackScholes
 
-BlackScholes.o:BlackScholes.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-BlackScholes_gold.o:BlackScholes_gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-BlackScholes: BlackScholes.o BlackScholes_gold.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./BlackScholes
-
-clean:
-	rm -f BlackScholes BlackScholes.o BlackScholes_gold.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/BlackScholes
-
-clobber: clean
+$(eval $(call EXECUTABLE, BlackScholes, BlackScholes.cu BlackScholes_gold.cpp ))
 
 endif

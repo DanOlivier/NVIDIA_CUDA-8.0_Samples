@@ -55,23 +55,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: matrixMul_nvrtc
 
-matrixMul.o:matrixMul.cpp
-	@$(HOST_COMPILER) $(INCLUDES) $(CCFLAGS) $(EXTRA_CCFLAGS) -o $@ -c $<
-
-matrixMul_nvrtc: matrixMul.o
-	@$(HOST_COMPILER) $(LDFLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./matrixMul_nvrtc
-
-clean:
-	rm -f matrixMul_nvrtc matrixMul.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/matrixMul_nvrtc
-
-clobber: clean
+$(eval $(call EXECUTABLE, matrixMul_nvrtc, matrixMul.cpp ))
 
 endif

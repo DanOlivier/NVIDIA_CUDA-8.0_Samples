@@ -103,23 +103,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cudaOpenMP
 
-cudaOpenMP.o:cudaOpenMP.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cudaOpenMP: cudaOpenMP.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cudaOpenMP
-
-clean:
-	rm -f cudaOpenMP cudaOpenMP.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cudaOpenMP
-
-clobber: clean
+$(eval $(call EXECUTABLE, cudaOpenMP, cudaOpenMP.cu ))
 
 endif

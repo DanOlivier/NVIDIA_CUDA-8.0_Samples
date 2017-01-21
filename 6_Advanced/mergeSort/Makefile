@@ -46,35 +46,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: mergeSort
 
-bitonic.o:bitonic.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-main.o:main.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mergeSort.o:mergeSort.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mergeSort_host.o:mergeSort_host.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mergeSort_validate.o:mergeSort_validate.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mergeSort: bitonic.o main.o mergeSort.o mergeSort_host.o mergeSort_validate.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./mergeSort
-
-clean:
-	rm -f mergeSort bitonic.o main.o mergeSort.o mergeSort_host.o mergeSort_validate.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/mergeSort
-
-clobber: clean
+$(eval $(call EXECUTABLE, mergeSort, \
+	bitonic.cu main.cpp mergeSort.cu mergeSort_host.cpp mergeSort_validate.cpp ))
 
 endif

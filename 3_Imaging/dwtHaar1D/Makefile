@@ -46,23 +46,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: dwtHaar1D
 
-dwtHaar1D.o:dwtHaar1D.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-dwtHaar1D: dwtHaar1D.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./dwtHaar1D
-
-clean:
-	rm -f dwtHaar1D dwtHaar1D.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/dwtHaar1D
-
-clobber: clean
+$(eval $(call EXECUTABLE,dwtHaar1D, dwtHaar1D.cu))
 
 endif

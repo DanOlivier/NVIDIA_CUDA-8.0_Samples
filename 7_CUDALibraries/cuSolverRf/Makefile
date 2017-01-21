@@ -115,29 +115,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cuSolverRf
 
-cuSolverRf.o:cuSolverRf.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio.c.o:mmio.c
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio_wrapper.o:mmio_wrapper.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cuSolverRf: cuSolverRf.o mmio.c.o mmio_wrapper.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cuSolverRf
-
-clean:
-	rm -f cuSolverRf cuSolverRf.o mmio.c.o mmio_wrapper.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cuSolverRf
-
-clobber: clean
+$(eval $(call EXECUTABLE, cuSolverRf, cuSolverRf.cpp mmio.c mmio_wrapper.cpp ))
 
 endif

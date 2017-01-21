@@ -70,26 +70,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleDevLibCUBLAS
 
-kernels.o:kernels.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleDevLibCUBLAS.o:simpleDevLibCUBLAS.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleDevLibCUBLAS: kernels.o simpleDevLibCUBLAS.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleDevLibCUBLAS
-
-clean:
-	rm -f simpleDevLibCUBLAS kernels.o simpleDevLibCUBLAS.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleDevLibCUBLAS
-
-clobber: clean
+$(eval $(call EXECUTABLE, simpleDevLibCUBLAS, kernels.cu simpleDevLibCUBLAS.cpp ))
 
 endif

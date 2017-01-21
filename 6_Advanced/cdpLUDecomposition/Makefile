@@ -70,35 +70,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cdpLUDecomposition
 
-cdp_lu.o:cdp_lu.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cdp_lu_main.o:cdp_lu_main.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-dgetf2.o:dgetf2.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-dgetrf.o:dgetrf.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-dlaswp.o:dlaswp.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cdpLUDecomposition: cdp_lu.o cdp_lu_main.o dgetf2.o dgetrf.o dlaswp.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cdpLUDecomposition
-
-clean:
-	rm -f cdpLUDecomposition cdp_lu.o cdp_lu_main.o dgetf2.o dgetrf.o dlaswp.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cdpLUDecomposition
-
-clobber: clean
+$(eval $(call EXECUTABLE, cdpLUDecomposition, \
+	cdp_lu.cu cdp_lu_main.cu dgetf2.cu dgetrf.cu dlaswp.cu ))
 
 endif

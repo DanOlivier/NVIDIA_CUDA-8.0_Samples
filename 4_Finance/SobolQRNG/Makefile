@@ -46,32 +46,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: SobolQRNG
 
-sobol.o:sobol.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-sobol_gold.o:sobol_gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-sobol_gpu.o:sobol_gpu.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-sobol_primitives.o:sobol_primitives.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-SobolQRNG: sobol.o sobol_gold.o sobol_gpu.o sobol_primitives.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./SobolQRNG
-
-clean:
-	rm -f SobolQRNG sobol.o sobol_gold.o sobol_gpu.o sobol_primitives.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/SobolQRNG
-
-clobber: clean
+$(eval $(call EXECUTABLE, SobolQRNG, \
+	sobol.cpp sobol_gold.cpp sobol_gpu.cu sobol_primitives.cpp ))
 
 endif

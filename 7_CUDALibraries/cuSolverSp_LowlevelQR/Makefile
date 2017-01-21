@@ -115,29 +115,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cuSolverSp_LowlevelQR
 
-cuSolverSp_LowlevelQR.o:cuSolverSp_LowlevelQR.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio.c.o:mmio.c
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio_wrapper.o:mmio_wrapper.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cuSolverSp_LowlevelQR: cuSolverSp_LowlevelQR.o mmio.c.o mmio_wrapper.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cuSolverSp_LowlevelQR
-
-clean:
-	rm -f cuSolverSp_LowlevelQR cuSolverSp_LowlevelQR.o mmio.c.o mmio_wrapper.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cuSolverSp_LowlevelQR
-
-clobber: clean
+$(eval $(call EXECUTABLE, cuSolverSp_LowlevelQR, \
+	cuSolverSp_LowlevelQR.cpp mmio.c mmio_wrapper.cpp ))
 
 endif

@@ -46,29 +46,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cppIntegration
 
-cppIntegration.o:cppIntegration.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cppIntegration_gold.o:cppIntegration_gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-main.o:main.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cppIntegration: cppIntegration.o cppIntegration_gold.o main.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cppIntegration
-
-clean:
-	rm -f cppIntegration cppIntegration.o cppIntegration_gold.o main.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cppIntegration
-
-clobber: clean
+$(eval $(call EXECUTABLE, cppIntegration, \
+	cppIntegration.cu cppIntegration_gold.cpp main.cpp ))
 
 endif

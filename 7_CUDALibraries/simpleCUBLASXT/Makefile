@@ -64,21 +64,4 @@ LIBRARIES += -lcublas
 # Target rules
 all: build
 
-build: simpleCUBLASXT
-
-simpleCUBLASXT.o:simpleCUBLASXT.cpp
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleCUBLASXT: simpleCUBLASXT.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	./simpleCUBLASXT
-
-clean:
-	rm -f simpleCUBLASXT simpleCUBLASXT.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleCUBLASXT
-
-clobber: clean
+$(eval $(call EXECUTABLE,simpleCUBLASXT, simpleCUBLASXT.cpp))

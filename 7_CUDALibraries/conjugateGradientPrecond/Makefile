@@ -64,21 +64,4 @@ LIBRARIES += -lcublas -lcusparse
 # Target rules
 all: build
 
-build: conjugateGradientPrecond
-
-main.o:main.cpp
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-conjugateGradientPrecond: main.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	./conjugateGradientPrecond
-
-clean:
-	rm -f conjugateGradientPrecond main.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/conjugateGradientPrecond
-
-clobber: clean
+$(eval $(call EXECUTABLE, conjugateGradientPrecond, main.cpp ))

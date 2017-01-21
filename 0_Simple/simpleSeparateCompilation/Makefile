@@ -36,7 +36,7 @@
 TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 include $(TOP)/../../common/common.mk
 
-ALL_CCFLAGS += -dc
+#ALL_CCFLAGS += -dc
 
 ################################################################################
 
@@ -47,29 +47,11 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleSeparateCompilation
 
-simpleDeviceLibrary.o:simpleDeviceLibrary.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+$(info $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
+$(eval $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
 
-simpleSeparateCompilation.o:simpleSeparateCompilation.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleDeviceLibrary.a:simpleDeviceLibrary.o
-	@$(NVCC) $(ALL_LDFLAGS) -lib -o $@ $< $(LIBRARIES)
-
-simpleSeparateCompilation: simpleDeviceLibrary.a simpleSeparateCompilation.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleSeparateCompilation
-
-clean:
-	rm -f simpleSeparateCompilation simpleDeviceLibrary.o simpleSeparateCompilation.o simpleDeviceLibrary.a
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleSeparateCompilation
-
-clobber: clean
+$(eval $(call EXECUTABLE, simpleSeparateCompilation, \
+	simpleSeparateCompilation.cu, simpleDeviceLibrary ))
 
 endif

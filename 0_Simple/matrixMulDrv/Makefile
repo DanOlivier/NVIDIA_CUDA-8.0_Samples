@@ -38,8 +38,6 @@ include $(TOP)/../../common/common.mk
 
 ################################################################################
 
-PTX_FILE := matrixMul_kernel${TARGET_SIZE}.ptx
-
 # Gencode arguments
 SMS ?=
 
@@ -70,31 +68,10 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: matrixMulDrv $(PTX_FILE)
 
-$(PTX_FILE): matrixMul_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -ptx $<
-	@mkdir -p data
-	@cp -f $@ ./data
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp -f $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+#PTX_FILE := matrixMul_kernel${TARGET_SIZE}.ptx
+CCFLAGS_matrixMul_kernel.cu = -ptx
 
-matrixMulDrv.o:matrixMulDrv.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-matrixMulDrv: matrixMulDrv.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./matrixMulDrv
-
-clean:
-	rm -f matrixMulDrv matrixMulDrv.o  data/$(PTX_FILE) $(PTX_FILE)
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/matrixMulDrv
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/$(PTX_FILE)
-
-clobber: clean
+$(eval $(call EXECUTABLE, matrixMulDrv, matrixMulDrv.cpp matrixMul_kernel.cu ))
 
 endif

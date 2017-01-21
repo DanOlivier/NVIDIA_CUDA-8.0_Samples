@@ -61,23 +61,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleAssert_nvrtc
 
-simpleAssert.o:simpleAssert.cpp
-	@$(HOST_COMPILER) $(INCLUDES) $(CCFLAGS) $(EXTRA_CCFLAGS) -o $@ -c $<
-
-simpleAssert_nvrtc: simpleAssert.o
-	@$(HOST_COMPILER) $(LDFLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleAssert_nvrtc
-
-clean:
-	rm -f simpleAssert_nvrtc simpleAssert.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleAssert_nvrtc
-
-clobber: clean
+$(eval $(call EXECUTABLE, simpleAssert_nvrtc, simpleAssert.cpp ))
 
 endif

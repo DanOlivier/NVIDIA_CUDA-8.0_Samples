@@ -90,32 +90,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: EGLStreams_CUDA_Interop
 
-cuda_consumer.o:cuda_consumer.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cuda_producer.o:cuda_producer.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-eglstrm_common.o:eglstrm_common.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-main.o:main.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-EGLStreams_CUDA_Interop: cuda_consumer.o cuda_producer.o eglstrm_common.o main.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./EGLStreams_CUDA_Interop
-
-clean:
-	rm -f EGLStreams_CUDA_Interop cuda_consumer.o cuda_producer.o eglstrm_common.o main.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/EGLStreams_CUDA_Interop
-
-clobber: clean
+$(eval $(call EXECUTABLE, EGLStreams_CUDA_Interop, \
+	cuda_consumer.cpp cuda_producer.cpp eglstrm_common.cpp main.cpp ))
 
 endif

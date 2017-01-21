@@ -90,29 +90,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: nbody_opengles
 
-bodysystemcuda.o:bodysystemcuda.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-nbody_opengles.o:nbody_opengles.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-render_particles.o:render_particles.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-nbody_opengles: bodysystemcuda.o nbody_opengles.o render_particles.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./nbody_opengles
-
-clean:
-	rm -f nbody_opengles bodysystemcuda.o nbody_opengles.o render_particles.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/nbody_opengles
-
-clobber: clean
+$(eval $(call EXECUTABLE, nbody_opengles, bodysystemcuda.cu nbody_opengles.cpp render_particles.cpp ))
 
 endif

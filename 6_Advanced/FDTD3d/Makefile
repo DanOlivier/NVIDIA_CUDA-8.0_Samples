@@ -48,29 +48,10 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: FDTD3d
 
-FDTD3d.o:src/FDTD3d.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-FDTD3dGPU.o:src/FDTD3dGPU.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-FDTD3dReference.o:src/FDTD3dReference.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-FDTD3d: FDTD3d.o FDTD3dGPU.o FDTD3dReference.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./FDTD3d
-
-clean:
-	rm -f FDTD3d FDTD3d.o FDTD3dGPU.o FDTD3dReference.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/FDTD3d
-
-clobber: clean
+SRCS = src/FDTD3d.cpp
+SRCS += src/FDTD3dGPU.cu
+SRCS += src/FDTD3dReference.cpp
+$(eval $(call EXECUTABLE, FDTD3d, $(SRCS) ))
 
 endif

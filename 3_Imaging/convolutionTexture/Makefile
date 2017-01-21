@@ -46,29 +46,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: convolutionTexture
 
-convolutionTexture.o:convolutionTexture.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-convolutionTexture_gold.o:convolutionTexture_gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-main.o:main.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-convolutionTexture: convolutionTexture.o convolutionTexture_gold.o main.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./convolutionTexture
-
-clean:
-	rm -f convolutionTexture convolutionTexture.o convolutionTexture_gold.o main.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/convolutionTexture
-
-clobber: clean
+$(eval $(call EXECUTABLE,convolutionTexture, convolutionTexture.cu convolutionTexture_gold.cpp main.cpp))
 
 endif

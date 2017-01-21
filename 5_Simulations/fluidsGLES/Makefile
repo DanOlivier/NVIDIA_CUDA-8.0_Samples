@@ -90,26 +90,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: fluidsGLES
 
-fluidsGLES.o:fluidsGLES.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-fluidsGLES_kernels.o:fluidsGLES_kernels.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-fluidsGLES: fluidsGLES.o fluidsGLES_kernels.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./fluidsGLES
-
-clean:
-	rm -f fluidsGLES fluidsGLES.o fluidsGLES_kernels.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/fluidsGLES
-
-clobber: clean
+$(eval $(call EXECUTABLE, fluidsGLES, fluidsGLES.cpp fluidsGLES_kernels.cu ))
 
 endif

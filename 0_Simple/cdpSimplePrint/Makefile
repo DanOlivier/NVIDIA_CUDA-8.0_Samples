@@ -70,23 +70,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cdpSimplePrint
 
-cdpSimplePrint.o:cdpSimplePrint.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cdpSimplePrint: cdpSimplePrint.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cdpSimplePrint
-
-clean:
-	rm -f cdpSimplePrint cdpSimplePrint.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cdpSimplePrint
-
-clobber: clean
+$(eval $(call EXECUTABLE, cdpSimplePrint, cdpSimplePrint.cu ))
 
 endif

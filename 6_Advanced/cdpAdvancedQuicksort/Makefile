@@ -70,26 +70,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cdpAdvancedQuicksort
 
-cdpAdvancedQuicksort.o:cdpAdvancedQuicksort.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cdpBitonicSort.o:cdpBitonicSort.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cdpAdvancedQuicksort: cdpAdvancedQuicksort.o cdpBitonicSort.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cdpAdvancedQuicksort
-
-clean:
-	rm -f cdpAdvancedQuicksort cdpAdvancedQuicksort.o cdpBitonicSort.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cdpAdvancedQuicksort
-
-clobber: clean
+$(eval $(call EXECUTABLE, cdpAdvancedQuicksort, cdpAdvancedQuicksort.cu cdpBitonicSort.cu ))
 
 endif

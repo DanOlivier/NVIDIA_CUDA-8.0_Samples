@@ -53,23 +53,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleVoteIntrinsics_nvrtc
 
-simpleVoteIntrinsics.o:simpleVoteIntrinsics.cpp
-	@$(HOST_COMPILER) $(INCLUDES) $(CCFLAGS) $(EXTRA_CCFLAGS) -o $@ -c $<
-
-simpleVoteIntrinsics_nvrtc: simpleVoteIntrinsics.o
-	@$(HOST_COMPILER) $(LDFLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleVoteIntrinsics_nvrtc
-
-clean:
-	rm -f simpleVoteIntrinsics_nvrtc simpleVoteIntrinsics.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleVoteIntrinsics_nvrtc
-
-clobber: clean
+$(eval $(call EXECUTABLE, simpleVoteIntrinsics_nvrtc, simpleVoteIntrinsics.cpp ))
 
 endif

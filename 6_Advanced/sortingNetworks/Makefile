@@ -46,32 +46,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: sortingNetworks
 
-bitonicSort.o:bitonicSort.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-main.o:main.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-oddEvenMergeSort.o:oddEvenMergeSort.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-sortingNetworks_validate.o:sortingNetworks_validate.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-sortingNetworks: bitonicSort.o main.o oddEvenMergeSort.o sortingNetworks_validate.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./sortingNetworks
-
-clean:
-	rm -f sortingNetworks bitonicSort.o main.o oddEvenMergeSort.o sortingNetworks_validate.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/sortingNetworks
-
-clobber: clean
+$(eval $(call EXECUTABLE, sortingNetworks, \
+	bitonicSort.cu main.cpp oddEvenMergeSort.cu sortingNetworks_validate.cpp ))
 
 endif

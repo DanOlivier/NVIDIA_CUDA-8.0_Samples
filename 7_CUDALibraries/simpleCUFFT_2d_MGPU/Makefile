@@ -48,23 +48,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleCUFFT_2d_MGPU
 
-simpleCUFFT_2d_MGPU.o:simpleCUFFT_2d_MGPU.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleCUFFT_2d_MGPU: simpleCUFFT_2d_MGPU.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleCUFFT_2d_MGPU
-
-clean:
-	rm -f simpleCUFFT_2d_MGPU simpleCUFFT_2d_MGPU.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleCUFFT_2d_MGPU
-
-clobber: clean
+$(eval $(call EXECUTABLE,simpleCUFFT_2d_MGPU, simpleCUFFT_2d_MGPU.cu))
 
 endif

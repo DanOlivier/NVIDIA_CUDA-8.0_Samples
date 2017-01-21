@@ -45,26 +45,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleAtomicIntrinsics
 
-simpleAtomicIntrinsics.o:simpleAtomicIntrinsics.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleAtomicIntrinsics_cpu.o:simpleAtomicIntrinsics_cpu.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleAtomicIntrinsics: simpleAtomicIntrinsics.o simpleAtomicIntrinsics_cpu.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleAtomicIntrinsics
-
-clean:
-	rm -f simpleAtomicIntrinsics simpleAtomicIntrinsics.o simpleAtomicIntrinsics_cpu.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleAtomicIntrinsics
-
-clobber: clean
+$(eval $(call EXECUTABLE, simpleAtomicIntrinsics, \
+	simpleAtomicIntrinsics.cu simpleAtomicIntrinsics_cpu.cpp ))
 
 endif

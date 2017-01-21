@@ -46,29 +46,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: quasirandomGenerator
 
-quasirandomGenerator.o:quasirandomGenerator.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-quasirandomGenerator_gold.o:quasirandomGenerator_gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-quasirandomGenerator_kernel.o:quasirandomGenerator_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-quasirandomGenerator: quasirandomGenerator.o quasirandomGenerator_gold.o quasirandomGenerator_kernel.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./quasirandomGenerator
-
-clean:
-	rm -f quasirandomGenerator quasirandomGenerator.o quasirandomGenerator_gold.o quasirandomGenerator_kernel.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/quasirandomGenerator
-
-clobber: clean
+$(eval $(call EXECUTABLE, quasirandomGenerator, \
+	quasirandomGenerator.cpp quasirandomGenerator_gold.cpp quasirandomGenerator_kernel.cu ))
 
 endif

@@ -80,23 +80,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: freeImageInteropNPP
 
-freeImageInteropNPP.o:freeImageInteropNPP.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-freeImageInteropNPP: freeImageInteropNPP.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./freeImageInteropNPP
-
-clean:
-	rm -f freeImageInteropNPP freeImageInteropNPP.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/freeImageInteropNPP
-
-clobber: clean
+$(eval $(call EXECUTABLE, freeImageInteropNPP, freeImageInteropNPP.cpp ))
 
 endif

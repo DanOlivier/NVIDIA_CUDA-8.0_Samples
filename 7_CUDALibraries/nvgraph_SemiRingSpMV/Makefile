@@ -89,23 +89,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: nvgraph_SemiRingSpmv
 
-nvgraph_SemiRingSpmv.o:nvgraph_SemiRingSpmv.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-nvgraph_SemiRingSpmv: nvgraph_SemiRingSpmv.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./nvgraph_SemiRingSpmv
-
-clean:
-	rm -f nvgraph_SemiRingSpmv nvgraph_SemiRingSpmv.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/nvgraph_SemiRingSpmv
-
-clobber: clean
+$(eval $(call EXECUTABLE,nvgraph_SemiRingSpmv, nvgraph_SemiRingSpmv.cpp ))
 
 endif

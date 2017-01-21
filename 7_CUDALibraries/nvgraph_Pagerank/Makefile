@@ -89,23 +89,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: nvgraph_Pagerank
 
-nvgraph_Pagerank.o:nvgraph_Pagerank.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-nvgraph_Pagerank: nvgraph_Pagerank.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./nvgraph_Pagerank
-
-clean:
-	rm -f nvgraph_Pagerank nvgraph_Pagerank.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/nvgraph_Pagerank
-
-clobber: clean
+$(eval $(call EXECUTABLE, nvgraph_Pagerank, nvgraph_Pagerank.cpp ))
 
 endif

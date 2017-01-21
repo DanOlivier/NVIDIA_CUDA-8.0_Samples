@@ -115,29 +115,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cuSolverDn_LinearSolver
 
-cuSolverDn_LinearSolver.o:cuSolverDn_LinearSolver.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio.c.o:mmio.c
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio_wrapper.o:mmio_wrapper.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cuSolverDn_LinearSolver: cuSolverDn_LinearSolver.o mmio.c.o mmio_wrapper.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cuSolverDn_LinearSolver
-
-clean:
-	rm -f cuSolverDn_LinearSolver cuSolverDn_LinearSolver.o mmio.c.o mmio_wrapper.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cuSolverDn_LinearSolver
-
-clobber: clean
+$(eval $(call EXECUTABLE, cuSolverDn_LinearSolver, cuSolverDn_LinearSolver.cpp mmio.c mmio_wrapper.cpp ))
 
 endif

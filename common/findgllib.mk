@@ -35,11 +35,11 @@
 ################################################################################
 
 # Determine OS platform and unix distribution
-ifeq ("$(TARGET_OS)","linux")
+ifeq ($(TARGET_OS),linux)
    # first search lsb_release
    DISTRO  = $(shell lsb_release -i -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
    DISTVER = $(shell lsb_release -r -s 2>/dev/null)
-   ifeq ("$(DISTRO)","")
+   ifeq ($(DISTRO),)
      # second search and parse /etc/issue
      DISTRO = $(shell more /etc/issue | awk '{print $$1}' | sed '1!d' | sed -e "/^$$/d" 2>/dev/null | tr "[:upper:]" "[:lower:]")
      DISTVER= $(shell more /etc/issue | awk '{print $$2}' | sed '1!d' 2>/dev/null)
@@ -47,24 +47,24 @@ ifeq ("$(TARGET_OS)","linux")
      ifeq (,$(filter $(DISTRO),ubuntu fedora red rhel centos suse))
        DISTRO = 
      endif
-     ifeq ("$(DISTRO)","")
+     ifeq ($(DISTRO),)
        # third, we can search in /etc/os-release or /etc/{distro}-release
-       DISTRO = $(shell awk '/ID/' /etc/*-release | sed 's/ID=//' | grep -v "VERSION" | grep -v "ID" | grep -v "DISTRIB")
-       DISTVER= $(shell awk '/DISTRIB_RELEASE/' /etc/*-release | sed 's/DISTRIB_RELEASE=//' | grep -v "DISTRIB_RELEASE")
+       DISTRO = $(shell awk '/ID/' /etc/*-release | sed 's/ID=//' | grep -v VERSION | grep -v ID | grep -v DISTRIB)
+       DISTVER= $(shell awk '/DISTRIB_RELEASE/' /etc/*-release | sed 's/DISTRIB_RELEASE=//' | grep -v DISTRIB_RELEASE)
      endif
    endif
 endif
 
-ifeq ("$(TARGET_OS)","linux")
+ifeq ($(TARGET_OS),linux)
     # $(info) >> findgllib.mk -> LINUX path <<<)
     # Each set of Linux Distros have different paths for where to find their OpenGL libraries reside
-    UBUNTU_PKG_NAME = "nvidia-367"
+    UBUNTU_PKG_NAME = nvidia-367
         UBUNTU = $(shell echo $(DISTRO) | grep -i ubuntu      >/dev/null 2>&1; echo $$?)
         FEDORA = $(shell echo $(DISTRO) | grep -i fedora      >/dev/null 2>&1; echo $$?)
         RHEL   = $(shell echo $(DISTRO) | grep -i 'red\|rhel' >/dev/null 2>&1; echo $$?)
         CENTOS = $(shell echo $(DISTRO) | grep -i centos      >/dev/null 2>&1; echo $$?)
         SUSE   = $(shell echo $(DISTRO) | grep -i suse        >/dev/null 2>&1; echo $$?)
-    ifeq ("$(UBUNTU)","0")
+    ifeq ($(UBUNTU),0)
       ifeq ($(HOST_ARCH)-$(TARGET_ARCH),x86_64-armv7l)
         GLPATH := /usr/arm-linux-gnueabihf/lib
         GLLINK := -L/usr/arm-linux-gnueabihf/lib
@@ -83,22 +83,22 @@ ifeq ("$(TARGET_OS)","linux")
         DFLT_PATH ?= /usr/lib
       endif
     endif
-    ifeq ("$(SUSE)","0")
+    ifeq ($(SUSE),0)
       GLPATH    ?= /usr/X11R6/lib64
       GLLINK    ?= -L/usr/X11R6/lib64
       DFLT_PATH ?= /usr/lib64
     endif
-    ifeq ("$(FEDORA)","0")
+    ifeq ($(FEDORA),0)
       GLPATH    ?= /usr/lib64/nvidia
       GLLINK    ?= -L/usr/lib64/nvidia
       DFLT_PATH ?= /usr/lib64
     endif
-    ifeq ("$(RHEL)","0")
+    ifeq ($(RHEL),0)
       GLPATH    ?= /usr/lib64/nvidia
       GLLINK    ?= -L/usr/lib64/nvidia
       DFLT_PATH ?= /usr/lib64
     endif
-    ifeq ("$(CENTOS)","0")
+    ifeq ($(CENTOS),0)
       GLPATH    ?= /usr/lib64/nvidia
       GLLINK    ?= -L/usr/lib64/nvidia
       DFLT_PATH ?= /usr/lib64
@@ -109,15 +109,15 @@ ifeq ("$(TARGET_OS)","linux")
   GLULIB := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libGLU.so -print 2>/dev/null)
   X11LIB := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libX11.so -print 2>/dev/null)
 
-  ifeq ("$(GLLIB)","")
+  ifeq ($(GLLIB),)
       $(info >>> WARNING - libGL.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(GLULIB)","")
+  ifeq ($(GLULIB),)
       $(info >>> WARNING - libGLU.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(X11LIB)","")
+  ifeq ($(X11LIB),)
       $(info >>> WARNING - libX11.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
@@ -131,15 +131,15 @@ ifeq ("$(TARGET_OS)","linux")
   GLUHEADER := $(shell find -L $(HEADER_SEARCH_PATH) -name glu.h -print 2>/dev/null)
   X11HEADER := $(shell find -L $(HEADER_SEARCH_PATH) -name Xlib.h -print 2>/dev/null)
 
-  ifeq ("$(GLHEADER)","")
+  ifeq ($(GLHEADER),)
       $(info >>> WARNING - gl.h not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(GLUHEADER)","")
+  ifeq ($(GLUHEADER),)
       $(info >>> WARNING - glu.h not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(X11HEADER)","")
+  ifeq ($(X11HEADER),)
       $(info >>> WARNING - Xlib.h not found, refer to CUDA Getting Started Guide for how to find and install them. <<<)
       SAMPLE_ENABLED := 0
   endif
@@ -147,3 +147,13 @@ else
     # This would be the Mac OS X path if we had to do anything special
 endif
 
+# OpenGL specific libraries
+ifeq ($(TARGET_OS),darwin)
+ # Mac OSX specific libraries and paths to include
+ LIBRARIES += -L/System/Library/Frameworks/OpenGL.framework/Libraries
+ LIBRARIES += -lGL -lGLU
+ ALL_LDFLAGS += -Xlinker -framework -Xlinker GLUT
+else
+ LIBRARIES += $(GLLINK)
+ LIBRARIES += -lGL -lGLU -lX11 -lglut
+endif

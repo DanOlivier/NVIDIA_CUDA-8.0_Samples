@@ -41,17 +41,6 @@ include $(TOP)/../../common/common.mk
 # Makefile include to help find GL Libraries
 include $(TOP)/../../common/findgllib.mk
 
-# OpenGL specific libraries
-ifeq ($(TARGET_OS),darwin)
- # Mac OSX specific libraries and paths to include
- LIBRARIES += -L/System/Library/Frameworks/OpenGL.framework/Libraries
- LIBRARIES += -lGL -lGLU
- ALL_LDFLAGS += -Xlinker -framework -Xlinker GLUT
-else
- LIBRARIES += $(GLLINK)
- LIBRARIES += -lGL -lGLU -lX11 -lglut
-endif
-
 # Gencode arguments
 SMS ?= 20 30 35 37 50 52 60
 
@@ -80,44 +69,16 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: smokeParticles
 
-GLSLProgram.o:GLSLProgram.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+SRCS = GLSLProgram.cpp
+SRCS += ParticleSystem.cpp
+SRCS += ParticleSystem_cuda.cu
+SRCS += SmokeRenderer.cpp
+SRCS += SmokeShaders.cpp
+SRCS += framebufferObject.cpp
+SRCS += particleDemo.cpp
+SRCS += renderbuffer.cpp
 
-ParticleSystem.o:ParticleSystem.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-ParticleSystem_cuda.o:ParticleSystem_cuda.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-SmokeRenderer.o:SmokeRenderer.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-SmokeShaders.o:SmokeShaders.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-framebufferObject.o:framebufferObject.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-particleDemo.o:particleDemo.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-renderbuffer.o:renderbuffer.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-smokeParticles: GLSLProgram.o ParticleSystem.o ParticleSystem_cuda.o SmokeRenderer.o SmokeShaders.o framebufferObject.o particleDemo.o renderbuffer.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./smokeParticles
-
-clean:
-	rm -f smokeParticles GLSLProgram.o ParticleSystem.o ParticleSystem_cuda.o SmokeRenderer.o SmokeShaders.o framebufferObject.o particleDemo.o renderbuffer.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/smokeParticles
-
-clobber: clean
+$(eval $(call EXECUTABLE,smokeParticles, $(SRCS) ))
 
 endif

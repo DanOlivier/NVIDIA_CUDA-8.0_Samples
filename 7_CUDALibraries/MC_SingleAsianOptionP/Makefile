@@ -48,29 +48,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: MC_SingleAsianOptionP
 
-main.o:src/main.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-pricingengine.o:src/pricingengine.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-test.o:src/test.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-MC_SingleAsianOptionP: main.o pricingengine.o test.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./MC_SingleAsianOptionP
-
-clean:
-	rm -f MC_SingleAsianOptionP main.o pricingengine.o test.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/MC_SingleAsianOptionP
-
-clobber: clean
+$(eval $(call EXECUTABLE, MC_SingleAsianOptionP, \
+	src/main.cpp src/pricingengine.cu src/test.cpp ))
 
 endif

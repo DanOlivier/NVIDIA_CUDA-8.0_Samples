@@ -36,6 +36,7 @@
 TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 include $(TOP)/../../common/common.mk
 
+LIBRARIES += -lcudadevrt
 
 ################################################################################
 
@@ -46,23 +47,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: radixSortThrust
 
-radixSortThrust.o:radixSortThrust.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-radixSortThrust: radixSortThrust.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./radixSortThrust
-
-clean:
-	rm -f radixSortThrust radixSortThrust.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/radixSortThrust
-
-clobber: clean
+$(eval $(call EXECUTABLE, radixSortThrust, radixSortThrust.cu ))
 
 endif

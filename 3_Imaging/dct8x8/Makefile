@@ -46,29 +46,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: dct8x8
 
-BmpUtil.o:BmpUtil.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-DCT8x8_Gold.o:DCT8x8_Gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-dct8x8.o:dct8x8.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-dct8x8: BmpUtil.o DCT8x8_Gold.o dct8x8.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./dct8x8
-
-clean:
-	rm -f dct8x8 BmpUtil.o DCT8x8_Gold.o dct8x8.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/dct8x8
-
-clobber: clean
+$(eval $(call EXECUTABLE,dct8x8, BmpUtil.cpp DCT8x8_Gold.cpp dct8x8.cu))
 
 endif

@@ -64,21 +64,4 @@ LIBRARIES += -lcublas
 # Target rules
 all: build
 
-build: simpleCUBLAS
-
-simpleCUBLAS.o:simpleCUBLAS.cpp
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleCUBLAS: simpleCUBLAS.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	./simpleCUBLAS
-
-clean:
-	rm -f simpleCUBLAS simpleCUBLAS.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleCUBLAS
-
-clobber: clean
+$(eval $(call EXECUTABLE,simpleCUBLAS, simpleCUBLAS.cpp))

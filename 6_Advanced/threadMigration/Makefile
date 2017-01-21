@@ -38,8 +38,6 @@ include $(TOP)/../../common/common.mk
 
 ################################################################################
 
-PTX_FILE := threadMigration_kernel${TARGET_SIZE}.ptx
-
 # Gencode arguments
 SMS ?=
 
@@ -72,31 +70,12 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: threadMigration $(PTX_FILE)
 
-$(PTX_FILE): threadMigration_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -ptx $<
-	@mkdir -p data
-	@cp -f $@ ./data
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp -f $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+#PTX_FILE := threadMigration_kernel${TARGET_SIZE}.ptx
+CCFLAGS_threadMigration_kernel.cu = -ptx
 
-threadMigration.o:threadMigration.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-threadMigration: threadMigration.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./threadMigration
-
-clean:
-	rm -f threadMigration threadMigration.o  data/$(PTX_FILE) $(PTX_FILE)
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/threadMigration
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/$(PTX_FILE)
-
-clobber: clean
+SRCS = threadMigration.cpp
+SRCS += threadMigration_kernel.cu
+$(eval $(call EXECUTABLE,cudaDecodeGL, $(SRCS) ))
 
 endif

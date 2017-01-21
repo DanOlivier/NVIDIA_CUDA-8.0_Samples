@@ -56,21 +56,8 @@ ifeq ($(TARGET_ARCH),aarch64)
   SAMPLE_ENABLED := 0
 endif
 
-PTX_FILE := NV12ToARGB_drvapi${TARGET_SIZE}.ptx
-
 # Makefile include to help find GL Libraries
 include $(TOP)/../../common/findgllib.mk
-
-# OpenGL specific libraries
-ifeq ($(TARGET_OS),darwin)
- # Mac OSX specific libraries and paths to include
- LIBRARIES += -L/System/Library/Frameworks/OpenGL.framework/Libraries
- LIBRARIES += -lGL -lGLU
- ALL_LDFLAGS += -Xlinker -framework -Xlinker GLUT
-else
- LIBRARIES += $(GLLINK)
- LIBRARIES += -lGL -lGLU -lX11 -lglut
-endif
 
 # Gencode arguments
 SMS ?=
@@ -104,52 +91,19 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cudaDecodeGL $(PTX_FILE)
 
-$(PTX_FILE): NV12ToARGB_drvapi.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -ptx $<
-	@mkdir -p data
-	@cp -f $@ ./data
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp -f $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+#PTX_FILE := NV12ToARGB_drvapi${TARGET_SIZE}.ptx
+CCFLAGS_NV12ToARGB_drvapi.cu += -ptx
 
-FrameQueue.o:FrameQueue.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-ImageGL.o:ImageGL.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-VideoDecoder.o:VideoDecoder.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-VideoParser.o:VideoParser.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-VideoSource.o:VideoSource.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cudaModuleMgr.o:cudaModuleMgr.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cudaProcessFrame.o:cudaProcessFrame.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-videoDecodeGL.o:videoDecodeGL.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cudaDecodeGL: FrameQueue.o ImageGL.o VideoDecoder.o VideoParser.o VideoSource.o cudaModuleMgr.o cudaProcessFrame.o videoDecodeGL.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cudaDecodeGL
-
-clean:
-	rm -f cudaDecodeGL FrameQueue.o ImageGL.o VideoDecoder.o VideoParser.o VideoSource.o cudaModuleMgr.o cudaProcessFrame.o videoDecodeGL.o  data/$(PTX_FILE) $(PTX_FILE)
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cudaDecodeGL
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/$(PTX_FILE)
-
-clobber: clean
+SRCS = FrameQueue.cpp
+SRCS += ImageGL.cpp
+SRCS += VideoDecoder.cpp
+SRCS += VideoParser.cpp
+SRCS += VideoSource.cpp
+SRCS += cudaModuleMgr.cpp
+SRCS += cudaProcessFrame.cpp
+SRCS += videoDecodeGL.cpp
+SRCS += NV12ToARGB_drvapi.cu
+$(eval $(call EXECUTABLE,cudaDecodeGL, $(SRCS) ))
 
 endif

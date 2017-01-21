@@ -41,17 +41,6 @@ include $(TOP)/../../common/common.mk
 # Makefile include to help find GL Libraries
 include $(TOP)/../../common/findgllib.mk
 
-# OpenGL specific libraries
-ifeq ($(TARGET_OS),darwin)
- # Mac OSX specific libraries and paths to include
- LIBRARIES += -L/System/Library/Frameworks/OpenGL.framework/Libraries
- LIBRARIES += -lGL -lGLU
- ALL_LDFLAGS += -Xlinker -framework -Xlinker GLUT
-else
- LIBRARIES += $(GLLINK)
- LIBRARIES += -lGL -lGLU -lX11 -lglut
-endif
-
 # Gencode arguments
 SMS ?= 20 30 35 37 50 52 60
 
@@ -82,26 +71,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: oceanFFT
 
-oceanFFT.o:oceanFFT.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-oceanFFT_kernel.o:oceanFFT_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-oceanFFT: oceanFFT.o oceanFFT_kernel.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./oceanFFT
-
-clean:
-	rm -f oceanFFT oceanFFT.o oceanFFT_kernel.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/oceanFFT
-
-clobber: clean
+$(eval $(call EXECUTABLE, oceanFFT, oceanFFT.cpp oceanFFT_kernel.cu ))
 
 endif

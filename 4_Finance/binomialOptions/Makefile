@@ -46,29 +46,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: binomialOptions
 
-binomialOptions.o:binomialOptions.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-binomialOptions_gold.o:binomialOptions_gold.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-binomialOptions_kernel.o:binomialOptions_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-binomialOptions: binomialOptions.o binomialOptions_gold.o binomialOptions_kernel.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./binomialOptions
-
-clean:
-	rm -f binomialOptions binomialOptions.o binomialOptions_gold.o binomialOptions_kernel.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/binomialOptions
-
-clobber: clean
+$(eval $(call EXECUTABLE, binomialOptions, \
+	binomialOptions.cpp binomialOptions_gold.cpp binomialOptions_kernel.cu ))
 
 endif

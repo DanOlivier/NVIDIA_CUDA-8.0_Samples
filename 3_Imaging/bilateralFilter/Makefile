@@ -41,17 +41,6 @@ include $(TOP)/../../common/common.mk
 # Makefile include to help find GL Libraries
 include $(TOP)/../../common/findgllib.mk
 
-# OpenGL specific libraries
-ifeq ($(TARGET_OS),darwin)
- # Mac OSX specific libraries and paths to include
- LIBRARIES += -L/System/Library/Frameworks/OpenGL.framework/Libraries
- LIBRARIES += -lGL -lGLU
- ALL_LDFLAGS += -Xlinker -framework -Xlinker GLUT
-else
- LIBRARIES += $(GLLINK)
- LIBRARIES += -lGL -lGLU -lX11 -lglut
-endif
-
 # Gencode arguments
 SMS ?= 20 30 35 37 50 52 60
 
@@ -80,32 +69,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: bilateralFilter
 
-bilateralFilter.o:bilateralFilter.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-bilateralFilter_cpu.o:bilateralFilter_cpu.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-bilateral_kernel.o:bilateral_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-bmploader.o:bmploader.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-bilateralFilter: bilateralFilter.o bilateralFilter_cpu.o bilateral_kernel.o bmploader.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./bilateralFilter
-
-clean:
-	rm -f bilateralFilter bilateralFilter.o bilateralFilter_cpu.o bilateral_kernel.o bmploader.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/bilateralFilter
-
-clobber: clean
+$(eval $(call EXECUTABLE,bilateralFilter, bilateralFilter.cpp bilateralFilter_cpu.cpp bilateral_kernel.cu bmploader.cpp))
 
 endif

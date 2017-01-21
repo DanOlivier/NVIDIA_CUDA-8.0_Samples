@@ -62,33 +62,13 @@ endif
 # Target rules
 all: build
 
-build: matrixMulDynlinkJIT
+SRCS = cuda_drvapi_dynlink.c
+SRCS += cuda_drvapi_dynlink.c
+SRCS += matrixMulDynlinkJIT.cpp
+SRCS += matrixMul_gold.cpp
+SRCS += matrixMul_kernel_32_ptxdump.c
+SRCS += matrixMul_kernel_32_ptxdump.c
+SRCS += matrixMul_kernel_64_ptxdump.c
+SRCS += matrixMul_kernel_64_ptxdump.c
 
-cuda_drvapi_dynlink.c.o:cuda_drvapi_dynlink.c
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-matrixMulDynlinkJIT.o:matrixMulDynlinkJIT.cpp
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-matrixMul_gold.o:matrixMul_gold.cpp
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-matrixMul_kernel_32_ptxdump.c.o:matrixMul_kernel_32_ptxdump.c
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-matrixMul_kernel_64_ptxdump.c.o:matrixMul_kernel_64_ptxdump.c
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-matrixMulDynlinkJIT: cuda_drvapi_dynlink.c.o matrixMulDynlinkJIT.o matrixMul_gold.o matrixMul_kernel_32_ptxdump.c.o matrixMul_kernel_64_ptxdump.c.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	./matrixMulDynlinkJIT
-
-clean:
-	rm -f matrixMulDynlinkJIT cuda_drvapi_dynlink.c.o matrixMulDynlinkJIT.o matrixMul_gold.o matrixMul_kernel_32_ptxdump.c.o matrixMul_kernel_64_ptxdump.c.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/matrixMulDynlinkJIT
-
-clobber: clean
+$(eval $(call EXECUTABLE, matrixMulDynlinkJIT, $(SRCS) ))

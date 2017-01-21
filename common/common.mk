@@ -227,3 +227,77 @@ ifneq ($(HIGHEST_SM),)
 GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
+
+################################################################################
+# Rule variables and templates
+
+V ?= 0
+
+PARTIAL_OUTPUT_PATH=$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+OBJ_DIR = obj/$(PARTIAL_OUTPUT_PATH)
+BIN_DIR = ../../bin/$(PARTIAL_OUTPUT_PATH)
+LIB_DIR = ../../lib/$(PARTIAL_OUTPUT_PATH)
+
+NVCC_0 = @echo "Compiling $<..."; $(NVCC)
+NVCC_V = $(if $(findstring 0,$(V)),$(NVCC_0),$(NVCC))
+
+LINK_0 = @echo "Linking $@..."; $(NVCC)
+LINK_V = $(if $(findstring 0,$(V)),$(NVCC_0),$(NVCC))
+
+AR_0 = @echo "Archiving $@..."; $(AR)
+AR_V = $(if $(findstring 0,$(V)),$(AR_0),$(AR))
+
+OBJ_NAME = $(patsubst %.cpp,$(OBJ_DIR)/%.o,\
+    $(patsubst %.c,$(OBJ_DIR)/%.o,\
+    $(patsubst %.cu,$(OBJ_DIR)/%.o,\
+    $(notdir $(1)))))
+OBJECTS=$(foreach src,$(1),$(call OBJ_NAME,$(src)))
+
+# Note: CFLAGS, LDFLAGS, LDLIBS will expand with the rule
+define OBJ_RULE
+-include $(patsubst %.o,%.dep,$(2))
+$(2) : $(1)
+	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
+	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(CCFLAGS_$(1)) $(GENCODE_FLAGS) -o $$@ -c $$<
+	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(CCFLAGS_$(1)) -odir $$(@D) -M $$< > $$(@:.o=.dep)
+endef
+
+LIB_NAME=lib$(1).a
+LIB_FULLNAME=$(LIB_DIR)/$(call LIB_NAME,$(1))
+LIB_FULLNAME_ALL=$(foreach lib,$(1),$(LIB_DIR)/$(call LIB_FULLNAME,$(lib)))
+
+TARGETS_ALL=$(foreach t,$(1),$(TARGET_$(t)))
+
+.PHONY: all
+.DEFAULT_GOAL=all
+
+define LIBRARY
+$$(foreach src,$(2),$$(eval $$(call OBJ_RULE,$$(src),$$(call OBJ_NAME,$$(src)))))
+
+TARGET = $(call LIB_FULLNAME,$(1))
+$$(TARGET): $(call OBJECTS,$(2))
+	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
+	$$(NVCC_V) -lib -o $$@ $$(filter %.o,$$^)
+
+build : $$(TARGET)
+
+endef
+
+define EXECUTABLE
+$$(foreach src,$(2),$$(eval $$(call OBJ_RULE,$$(src),$$(call OBJ_NAME,$$(src)))))
+
+TARGET_NAME = $(BIN_DIR)/$(strip $(1))
+$$(TARGET_NAME): $(call OBJECTS,$(2)) $(call TARGETS_ALL,$(3))
+	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
+	$$(NVCC_V) $(ALL_LDFLAGS) $$(filter %.o,$$^) -o $$@ \
+		-L$(LIB_DIR) $(foreach lib,$(3),-l$(lib)) \
+		$(LIBRARIES)
+
+build : $$(TARGET_NAME)
+
+run: $$(TARGET_NAME)
+	@$$(TARGET_NAME)
+
+clean:
+	-@rm -fr $(TARGET_NAME) $(OBJ_DIR)
+endef

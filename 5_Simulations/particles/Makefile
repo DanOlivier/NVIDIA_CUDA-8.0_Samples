@@ -41,17 +41,6 @@ include $(TOP)/../../common/common.mk
 # Makefile include to help find GL Libraries
 include $(TOP)/../../common/findgllib.mk
 
-# OpenGL specific libraries
-ifeq ($(TARGET_OS),darwin)
- # Mac OSX specific libraries and paths to include
- LIBRARIES += -L/System/Library/Frameworks/OpenGL.framework/Libraries
- LIBRARIES += -lGL -lGLU
- ALL_LDFLAGS += -Xlinker -framework -Xlinker GLUT
-else
- LIBRARIES += $(GLLINK)
- LIBRARIES += -lGL -lGLU -lX11 -lglut
-endif
-
 # Gencode arguments
 SMS ?= 20 30 35 37 50 52 60
 
@@ -80,35 +69,7 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: particles
 
-particleSystem.o:particleSystem.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-particleSystem_cuda.o:particleSystem_cuda.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-particles.o:particles.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-render_particles.o:render_particles.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-shaders.o:shaders.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-particles: particleSystem.o particleSystem_cuda.o particles.o render_particles.o shaders.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./particles
-
-clean:
-	rm -f particles particleSystem.o particleSystem_cuda.o particles.o render_particles.o shaders.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/particles
-
-clobber: clean
+$(eval $(call EXECUTABLE,particles, particleSystem.cpp particleSystem_cuda.cu particles.cpp render_particles.cpp shaders.cpp))
 
 endif

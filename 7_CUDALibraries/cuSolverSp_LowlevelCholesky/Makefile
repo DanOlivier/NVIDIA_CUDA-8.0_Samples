@@ -115,29 +115,8 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cuSolverSp_LowlevelCholesky
 
-cuSolverSp_LowlevelCholesky.o:cuSolverSp_LowlevelCholesky.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio.c.o:mmio.c
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-mmio_wrapper.o:mmio_wrapper.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-cuSolverSp_LowlevelCholesky: cuSolverSp_LowlevelCholesky.o mmio.c.o mmio_wrapper.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./cuSolverSp_LowlevelCholesky
-
-clean:
-	rm -f cuSolverSp_LowlevelCholesky cuSolverSp_LowlevelCholesky.o mmio.c.o mmio_wrapper.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cuSolverSp_LowlevelCholesky
-
-clobber: clean
+$(eval $(call EXECUTABLE, cuSolverSp_LowlevelCholesky, \
+	cuSolverSp_LowlevelCholesky.cpp mmio.c mmio_wrapper.cpp ))
 
 endif

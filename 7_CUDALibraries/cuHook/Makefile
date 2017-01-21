@@ -95,31 +95,9 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: cuHook libcuhook.so.1
 
-cuHook.o:cuHook.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-libcuhook.o:libcuhook.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) --compiler-options '-fPIC' $(GENCODE_FLAGS) -o $@ -c $<
-
-libcuhook.so.1:libcuhook.o
-	@$(NVCC) -shared $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-cuHook: cuHook.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@LD_PRELOAD=./libcuhook.so.1 ./cuHook
-
-clean:
-	rm -f cuHook cuHook.o libcuhook.o libcuhook.so.1
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cuHook
-
-clobber: clean
+# Todo: allow multiple binaries (exe,dso,lib) to coexist
+$(eval $(call EXECUTABLE, libcuhook, cuHook.cpp libcuhook.cpp ))
+$(eval $(call EXECUTABLE, cuHook, cuHook.cpp, libcuhook ))
 
 endif

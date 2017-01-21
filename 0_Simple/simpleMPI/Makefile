@@ -99,26 +99,10 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: simpleMPI
 
-simpleMPI_mpi.o:simpleMPI.cpp
-	@$(MPICXX) $(INCLUDES) $(MPI_CCFLAGS) -o $@ -c $<
-
-simpleMPI.o:simpleMPI.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-simpleMPI: simpleMPI_mpi.o simpleMPI.o
-	@$(MPICXX) $(MPI_LDFLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./simpleMPI
-
-clean:
-	rm -f simpleMPI simpleMPI_mpi.o simpleMPI.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleMPI
-
-clobber: clean
+# TODO: Override rules for main.cpp (mpicxx + flags) 
+#$(eval $(call EXECUTABLE, simpleMPI, simpleMPI.cu main.cpp))
+build:
+	@echo "Skipping simpleMPI"
 
 endif

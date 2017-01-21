@@ -38,8 +38,6 @@ include $(TOP)/../../common/common.mk
 
 ################################################################################
 
-PTX_FILE := vectorAdd_kernel${TARGET_SIZE}.ptx
-
 # Gencode arguments
 SMS ?=
 
@@ -70,31 +68,9 @@ ifeq ($(SAMPLE_ENABLED),0)
 build:
 	@echo "Sample will be waived due to missing dependencies"
 else
-build: vectorAddDrv $(PTX_FILE)
 
-$(PTX_FILE): vectorAdd_kernel.cu
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -ptx $<
-	@mkdir -p data
-	@cp -f $@ ./data
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp -f $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-vectorAddDrv.o:vectorAddDrv.cpp
-	@$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
-
-vectorAddDrv: vectorAddDrv.o
-	@$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	@mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	@cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-
-run: build
-	@./vectorAddDrv
-
-clean:
-	rm -f vectorAddDrv vectorAddDrv.o  data/$(PTX_FILE) $(PTX_FILE)
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/vectorAddDrv
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/$(PTX_FILE)
-
-clobber: clean
+#PTX_FILE := vectorAdd_kernel${TARGET_SIZE}.ptx
+CCFLAGS_vectorAdd_kernel.cu = -ptx
+$(eval $(call EXECUTABLE, vectorAddDrv, vectorAdd_kernel.cu vectorAddDrv.cpp ))
 
 endif
