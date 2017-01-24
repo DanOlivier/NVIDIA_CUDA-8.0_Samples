@@ -124,3 +124,8 @@ ifeq ($(TARGET_OS),linux)
 else
 endif
 
+# EGL specific libraries
+ifneq ($(TARGET_OS),darwin)
+ LIBRARIES += -lEGL
+endif
+

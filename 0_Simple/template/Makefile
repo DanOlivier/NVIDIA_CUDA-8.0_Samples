@@ -46,6 +46,6 @@ build:
 	@echo "Sample will be waived due to missing dependencies"
 else
 
-$(eval $(call EXECUTABLE, template, template.c template_cpu.cpp ))
+$(eval $(call EXECUTABLE, template, template.cu template_cpu.cpp ))
 
 endif

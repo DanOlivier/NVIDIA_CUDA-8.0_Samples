@@ -59,24 +59,8 @@ endif
 # Makefile include to help find GL Libraries
 include $(TOP)/../../common/findgllib.mk
 
-# Gencode arguments
-SMS ?=
-
-ifeq ($(GENCODE_FLAGS),)
-# Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
-
-ifeq ($(SMS),)
 # Generate PTX code from SM 20
-GENCODE_FLAGS += -gencode arch=compute_20,code=compute_20
-endif
-
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
-endif
+GENCODE_FLAGS = -gencode arch=compute_20,code=compute_20
 
 include $(TOP)/../../common/libCUDA.mk
 
@@ -92,8 +76,11 @@ build:
 	@echo "Sample will be waived due to missing dependencies"
 else
 
-#PTX_FILE := NV12ToARGB_drvapi${TARGET_SIZE}.ptx
-CCFLAGS_NV12ToARGB_drvapi.cu += -ptx
+PTX_FILE := NV12ToARGB_drvapi${TARGET_SIZE}.ptx
+$(PTX_FILE): NV12ToARGB_drvapi.cu 
+	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -ptx $< 
+
+$(BIN_DIR)/cudaDecodeGL: $(PTX_FILE)
 
 SRCS = FrameQueue.cpp
 SRCS += ImageGL.cpp
@@ -103,7 +90,6 @@ SRCS += VideoSource.cpp
 SRCS += cudaModuleMgr.cpp
 SRCS += cudaProcessFrame.cpp
 SRCS += videoDecodeGL.cpp
-SRCS += NV12ToARGB_drvapi.cu
 $(eval $(call EXECUTABLE,cudaDecodeGL, $(SRCS) ))
 
 endif

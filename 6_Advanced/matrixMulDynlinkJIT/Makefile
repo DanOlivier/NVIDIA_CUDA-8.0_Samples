@@ -38,37 +38,18 @@ include $(TOP)/../../common/common.mk
 
 ################################################################################
 
-# Gencode arguments
-SMS ?=
-
-ifeq ($(GENCODE_FLAGS),)
-# Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
-
-ifeq ($(SMS),)
 # Generate PTX code from SM 20
-GENCODE_FLAGS += -gencode arch=compute_20,code=compute_20
-endif
-
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
-endif
+GENCODE_FLAGS = -gencode arch=compute_20,code=compute_20
 
 ################################################################################
 
 # Target rules
 all: build
 
-SRCS = cuda_drvapi_dynlink.c
-SRCS += cuda_drvapi_dynlink.c
+SRCS  = cuda_drvapi_dynlink.c
 SRCS += matrixMulDynlinkJIT.cpp
 SRCS += matrixMul_gold.cpp
 SRCS += matrixMul_kernel_32_ptxdump.c
-SRCS += matrixMul_kernel_32_ptxdump.c
-SRCS += matrixMul_kernel_64_ptxdump.c
 SRCS += matrixMul_kernel_64_ptxdump.c
 
 $(eval $(call EXECUTABLE, matrixMulDynlinkJIT, $(SRCS) ))

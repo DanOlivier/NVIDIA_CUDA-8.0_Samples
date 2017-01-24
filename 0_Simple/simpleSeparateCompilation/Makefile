@@ -36,7 +36,7 @@
 TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 include $(TOP)/../../common/common.mk
 
-#ALL_CCFLAGS += -dc
+ALL_CCFLAGS += -dc
 
 ################################################################################
 
@@ -48,7 +48,6 @@ build:
 	@echo "Sample will be waived due to missing dependencies"
 else
 
-#$(info $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
 $(eval $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
 
 $(eval $(call EXECUTABLE, simpleSeparateCompilation, \

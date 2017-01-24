@@ -38,24 +38,8 @@ include $(TOP)/../../common/common.mk
 
 ################################################################################
 
-# Gencode arguments
-SMS ?=
-
-ifeq ($(GENCODE_FLAGS),)
-# Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
-
-ifeq ($(SMS),)
 # Generate PTX code from SM 20
-GENCODE_FLAGS += -gencode arch=compute_20,code=compute_20
-endif
-
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
-endif
+GENCODE_FLAGS = -gencode arch=compute_20,code=compute_20
 
 LIBRARIES += -lcublas_static -lcusparse_static -lculibos
 

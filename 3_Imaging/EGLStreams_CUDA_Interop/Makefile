@@ -55,29 +55,8 @@ endif
 # Makefile include to help find EGL Libraries
 include $(TOP)/../../common/findegl.mk
 
-# EGL specific libraries
-ifneq ($(TARGET_OS),darwin)
- LIBRARIES += -lEGL
-endif
-
 # Gencode arguments
 SMS ?= 32 53 62
-
-ifeq ($(SMS),)
-$(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
-SAMPLE_ENABLED := 0
-endif
-
-ifeq ($(GENCODE_FLAGS),)
-# Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
-
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
-endif
 
 include $(TOP)/../../common/libCUDA.mk
 

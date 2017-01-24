@@ -34,6 +34,7 @@ else
       CUDA_SEARCH_PATH += $(CUDA_PATH)/targets/ppc64le-linux/lib/stubs
     endif
   else
+    UBUNTU = $(shell lsb_release -i -s 2>/dev/null | grep -i ubuntu)
     ifneq ($(UBUNTU),)
       CUDA_SEARCH_PATH += /usr/lib
     else

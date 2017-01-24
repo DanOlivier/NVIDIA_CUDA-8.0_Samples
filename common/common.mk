@@ -212,21 +212,30 @@ LIBRARIES :=
 # Gencode arguments
 SMS ?= 20 30 35 37 50 52 60
 
-ifeq ($(SMS),)
-$(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
-SAMPLE_ENABLED := 0
-endif
+# ifeq ($(SMS),)
+# $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
+# SAMPLE_ENABLED := 0
+# endif
 
-ifeq ($(GENCODE_FLAGS),)
 # Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
+GENCODE_FLAGS ?= $(foreach sm,$(SMS),-gencode arch=compute_$(sm),code=sm_$(sm)) $(GENCODE_FLAGS_HIGHEST)
 
 # Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
+HIGHEST_SM = $(lastword $(sort $(SMS)))
+GENCODE_FLAGS_HIGHEST = -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
+
+define SMS_ExcludeLessThan
+SMS_exclude := $$(shell for i in $(SMS); do if test $$$$i -lt $(1); then echo -n "$$$$i "; fi; done)
+SMS := $$(filter-out $$(SMS_exclude),$$(SMS))
+ifneq (,$$(SMS_exclude))
+$$(info Excluding SM architectures < $(1)... $$(SMS_exclude))
+$$(info Compiling only SM $$(SMS))
 endif
+ifeq ($$(SMS),)
+$$(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
+SAMPLE_ENABLED := 0
 endif
+endef
 
 ################################################################################
 # Rule variables and templates
@@ -235,8 +244,8 @@ V ?= 0
 
 PARTIAL_OUTPUT_PATH=$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 OBJ_DIR = obj/$(PARTIAL_OUTPUT_PATH)
-BIN_DIR = ../../bin/$(PARTIAL_OUTPUT_PATH)
-LIB_DIR = ../../lib/$(PARTIAL_OUTPUT_PATH)
+BIN_DIR = ../../$(PARTIAL_OUTPUT_PATH)/bin
+LIB_DIR = ../../$(PARTIAL_OUTPUT_PATH)/lib
 
 NVCC_0 = @echo "Compiling $<..."; $(NVCC)
 NVCC_V = $(if $(findstring 0,$(V)),$(NVCC_0),$(NVCC))
@@ -259,7 +268,7 @@ define OBJ_RULE
 $(2) : $(1)
 	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
 	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(CCFLAGS_$(1)) $(GENCODE_FLAGS) -o $$@ -c $$<
-	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(CCFLAGS_$(1)) -odir $$(@D) -M $$< > $$(@:.o=.dep)
+	$(NVCC_V) $(INCLUDES) $(filter-out -dc -ptx,$(ALL_CCFLAGS) $(CCFLAGS_$(1))) -odir $$(@D) -M $$< > $$(@:.o=.dep)
 endef
 
 LIB_NAME=lib$(1).a
@@ -274,12 +283,13 @@ TARGETS_ALL=$(foreach t,$(1),$(TARGET_$(t)))
 define LIBRARY
 $$(foreach src,$(2),$$(eval $$(call OBJ_RULE,$$(src),$$(call OBJ_NAME,$$(src)))))
 
-TARGET = $(call LIB_FULLNAME,$(1))
-$$(TARGET): $(call OBJECTS,$(2))
+TARGET_NAME = TARGET_$(strip $(1))
+$$(TARGET_NAME) = $(call LIB_FULLNAME,$(strip $(1)))
+$$($$(TARGET_NAME)): $(call OBJECTS,$(2))
 	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
-	$$(NVCC_V) -lib -o $$@ $$(filter %.o,$$^)
+	$$(NVCC_V) $(filter-out -dc -ptx,$(ALL_CCFLAGS) $(CCFLAGS_$(strip $(1))) ) -lib -o $$@ $$(filter %.o,$$^)
 
-build : $$(TARGET)
+build : $$($$(TARGET_NAME))
 
 endef
 

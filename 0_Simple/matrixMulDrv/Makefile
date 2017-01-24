@@ -38,24 +38,8 @@ include $(TOP)/../../common/common.mk
 
 ################################################################################
 
-# Gencode arguments
-SMS ?=
-
-ifeq ($(GENCODE_FLAGS),)
-# Generate SASS code for each SM architecture listed in $(SMS)
-$(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
-
-ifeq ($(SMS),)
 # Generate PTX code from SM 20
-GENCODE_FLAGS += -gencode arch=compute_20,code=compute_20
-endif
-
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
-endif
+GENCODE_FLAGS = -gencode arch=compute_20,code=compute_20
 
 include $(TOP)/../../common/libCUDA.mk
 
@@ -69,9 +53,12 @@ build:
 	@echo "Sample will be waived due to missing dependencies"
 else
 
-#PTX_FILE := matrixMul_kernel${TARGET_SIZE}.ptx
-CCFLAGS_matrixMul_kernel.cu = -ptx
+PTX_FILE := matrixMul_kernel${TARGET_SIZE}.ptx
+$(PTX_FILE): matrixMul_kernel.cu 
+	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -ptx $< 
 
-$(eval $(call EXECUTABLE, matrixMulDrv, matrixMulDrv.cpp matrixMul_kernel.cu ))
+$(BIN_DIR)/matrixMulDrv: $(PTX_FILE)
+
+$(eval $(call EXECUTABLE, matrixMulDrv, matrixMulDrv.cpp ))
 
 endif
