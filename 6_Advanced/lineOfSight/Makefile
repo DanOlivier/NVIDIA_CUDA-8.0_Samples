@@ -36,7 +36,6 @@
 TOP := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 include $(TOP)/../../common/common.mk
 
-
 ################################################################################
 
 # Target rules

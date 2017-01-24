@@ -55,11 +55,6 @@ endif
 # Makefile include to help find GLES Libraries
 include $(TOP)/../../common/findgleslib.mk
 
-# OpenGLES specific libraries
-ifneq ($(TARGET_OS),darwin)
- LIBRARIES += $(GLESLINK) -lGLESv2 -lEGL -ldrm
-endif
-
 # Gencode arguments
 SMS ?= 20 30 35 37 50 52 60
 

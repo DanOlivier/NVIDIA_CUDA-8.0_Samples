@@ -145,3 +145,7 @@ ifeq ("$(TARGET_OS)","linux")
 else
 endif
 
+# OpenGLES specific libraries
+ifneq ($(TARGET_OS),darwin)
+ LIBRARIES += $(GLESLINK) -lGLESv2 -lEGL -lX11
+endif

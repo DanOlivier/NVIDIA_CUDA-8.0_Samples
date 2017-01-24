@@ -48,7 +48,7 @@ build:
 	@echo "Sample will be waived due to missing dependencies"
 else
 
-$(info $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
+#$(info $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
 $(eval $(call LIBRARY, simpleDeviceLibrary, simpleDeviceLibrary.cu ))
 
 $(eval $(call EXECUTABLE, simpleSeparateCompilation, \
