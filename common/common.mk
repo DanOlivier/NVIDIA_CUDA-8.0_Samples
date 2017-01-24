@@ -265,32 +265,51 @@ OBJECTS=$(foreach src,$(1),$(call OBJ_NAME,$(src)))
 # Note: CFLAGS, LDFLAGS, LDLIBS will expand with the rule
 define OBJ_RULE
 -include $(patsubst %.o,%.dep,$(2))
-$(2) : $(1)
+$(2): $(1)
 	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
 	$(NVCC_V) $(INCLUDES) $(ALL_CCFLAGS) $(CCFLAGS_$(1)) $(GENCODE_FLAGS) -o $$@ -c $$<
 	$(NVCC_V) $(INCLUDES) $(filter-out -dc -ptx,$(ALL_CCFLAGS) $(CCFLAGS_$(1))) -odir $$(@D) -M $$< > $$(@:.o=.dep)
 endef
 
-LIB_NAME=lib$(1).a
+LIB_NAME=lib$(strip $(1)).a
 LIB_FULLNAME=$(LIB_DIR)/$(call LIB_NAME,$(1))
 LIB_FULLNAME_ALL=$(foreach lib,$(1),$(LIB_DIR)/$(call LIB_FULLNAME,$(lib)))
 
+SO_NAME=lib$(strip $(1)).so
+SO_FULLNAME=$(LIB_DIR)/$(call SO_NAME,$(1))
+SO_FULLNAME_ALL=$(foreach lib,$(1),$(LIB_DIR)/$(call SO_NAME,$(lib)))
+
 TARGETS_ALL=$(foreach t,$(1),$(TARGET_$(t)))
 
-.PHONY: all
-.DEFAULT_GOAL=all
+.PHONY: build
+.DEFAULT_GOAL=build
 
 define LIBRARY
 $$(foreach src,$(2),$$(eval $$(call OBJ_RULE,$$(src),$$(call OBJ_NAME,$$(src)))))
 
-TARGET_NAME = TARGET_$(strip $(1))
-$$(TARGET_NAME) = $(call LIB_FULLNAME,$(strip $(1)))
-$$($$(TARGET_NAME)): $(call OBJECTS,$(2))
+TARGET_NAME = $(call LIB_FULLNAME,$(strip $(1)))
+$$(TARGET_NAME): $(call OBJECTS,$(2))
 	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
 	$$(NVCC_V) $(filter-out -dc -ptx,$(ALL_CCFLAGS) $(CCFLAGS_$(strip $(1))) ) -lib -o $$@ $$(filter %.o,$$^)
 
-build : $$($$(TARGET_NAME))
+build: $$(TARGET_NAME)
 
+endef
+
+define SHARED_OBJECT
+$$(foreach src,$(2),$$(eval $$(call OBJ_RULE,$$(src),$$(call OBJ_NAME,$$(src)))))
+
+TARGET_NAME = $(call SO_FULLNAME,$(1))
+$$(TARGET_NAME): $(call OBJECTS,$(2)) $(call TARGETS_ALL,$(3))
+	@if test ! -d $$(@D); then mkdir -p $$(@D); fi
+	$$(NVCC_V) $(ALL_LDFLAGS) -shared $$(filter %.o,$$^) -o $$@ \
+		-L$(LIB_DIR) $(foreach lib,$(3),-l$(lib)) \
+		$(LIBRARIES)
+
+build: $$(TARGET_NAME)
+
+clean:
+	-rm -fr $$(TARGET_NAME) $(OBJ_DIR)
 endef
 
 define EXECUTABLE
@@ -303,7 +322,7 @@ $$(TARGET_NAME): $(call OBJECTS,$(2)) $(call TARGETS_ALL,$(3))
 		-L$(LIB_DIR) $(foreach lib,$(3),-l$(lib)) \
 		$(LIBRARIES)
 
-build : $$(TARGET_NAME)
+build: $$(TARGET_NAME)
 
 run: $$(TARGET_NAME)
 	@$$(TARGET_NAME)
@@ -311,5 +330,9 @@ run: $$(TARGET_NAME)
 clean:
 	-rm -fr $$(TARGET_NAME) $(OBJ_DIR)
 endef
+
+build:
+
+run: 
 
 clean:

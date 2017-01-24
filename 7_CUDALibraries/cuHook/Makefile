@@ -77,8 +77,12 @@ build:
 	@echo "Sample will be waived due to missing dependencies"
 else
 
-# Todo: allow multiple binaries (exe,dso,lib) to coexist
-$(eval $(call EXECUTABLE, libcuhook, cuHook.cpp libcuhook.cpp ))
-$(eval $(call EXECUTABLE, cuHook, cuHook.cpp, libcuhook ))
+CCFLAGS_libcuhook.cpp=--compiler-options -fPIC
+$(eval $(call SHARED_OBJECT, cuhook, libcuhook.cpp ))
+$(eval $(call EXECUTABLE, cuHook, cuHook.cpp ))
+
+#build: $(BIN_DIR)/cuHook $(call SO_FULLNAME,cuhook)
+run: build
+	LD_PRELOAD=$(abspath $(call SO_FULLNAME,cuhook)) $(BIN_DIR)/cuHook
 
 endif

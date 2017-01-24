@@ -51,6 +51,9 @@ PROJECTS := $(filter-out $(FILTER_OUT),$(PROJECTS))
 %.ph_build :
 	+@$(MAKE) -C $(dir $*) $(MAKECMDGOALS)
 
+%.ph_run :
+	+@$(MAKE) -C $(dir $*) run $(MAKECMDGOALS)
+
 %.ph_clean : 
 	+@$(MAKE) -C $(dir $*) clean $(USE_DEVICE)
 
@@ -65,6 +68,8 @@ build: $(addsuffix .ph_build,$(PROJECTS))
 tidy:
 	@find * | egrep "#" | xargs rm -f
 	@find * | egrep "\~" | xargs rm -f
+
+run: $(addsuffix .ph_run,$(PROJECTS))
 
 clean: tidy $(addsuffix .ph_clean,$(PROJECTS))
 
