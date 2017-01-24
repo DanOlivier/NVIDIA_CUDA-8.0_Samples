@@ -35,33 +35,33 @@
 ################################################################################
 
 # Determine OS platform and unix distribution
-ifeq ("$(TARGET_OS)","linux")
+ifeq ($(TARGET_OS),linux)
    # first search lsb_release
    DISTRO  = $(shell lsb_release -i -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
-   ifeq ("$(DISTRO)","")
+   ifeq ($(DISTRO),)
      # second search and parse /etc/issue
      DISTRO = $(shell more /etc/issue | awk '{print $$1}' | sed '1!d' | sed -e "/^$$/d" 2>/dev/null | tr "[:upper:]" "[:lower:]")
      # ensure data from /etc/issue is valid
      ifneq (,$(filter $(DISTRO),ubuntu fedora red rhel centos suse))
        DISTRO = 
      endif
-     ifeq ("$(DISTRO)","")
+     ifeq ($(DISTRO),)
        # third, we can search in /etc/os-release or /etc/{distro}-release
-       DISTRO = $(shell awk '/ID/' /etc/*-release | sed 's/ID=//' | grep -v "VERSION" | grep -v "ID" | grep -v "DISTRIB")
+       DISTRO = $(shell awk '/ID/' /etc/*-release | sed 's/ID=//' | grep -v VERSION | grep -v ID | grep -v DISTRIB)
      endif
    endif
 endif
 
-ifeq ("$(TARGET_OS)","linux")
+ifeq ($(TARGET_OS),linux)
     # $(info) >> findegl.mk -> LINUX path <<<)
     # Each set of Linux Distros have different paths for where to find their OpenGL libraries reside
-    UBUNTU_PKG_NAME = "nvidia-367"
+    UBUNTU_PKG_NAME = nvidia-367
     UBUNTU = $(shell echo $(DISTRO) | grep -i ubuntu      >/dev/null 2>&1; echo $$?)
     FEDORA = $(shell echo $(DISTRO) | grep -i fedora      >/dev/null 2>&1; echo $$?)
     RHEL   = $(shell echo $(DISTRO) | grep -i 'red\|rhel' >/dev/null 2>&1; echo $$?)
     CENTOS = $(shell echo $(DISTRO) | grep -i centos      >/dev/null 2>&1; echo $$?)
     SUSE   = $(shell echo $(DISTRO) | grep -i suse        >/dev/null 2>&1; echo $$?)
-    ifeq ("$(UBUNTU)","0")
+    ifeq ($(UBUNTU),0)
       ifeq ($(HOST_ARCH)-$(TARGET_ARCH),x86_64-armv7l)
         GLPATH := /usr/arm-linux-gnueabihf/lib
         GLLINK := -L/usr/arm-linux-gnueabihf/lib
@@ -77,22 +77,22 @@ ifeq ("$(TARGET_OS)","linux")
         DFLT_PATH ?= /usr/lib
       endif
     endif
-    ifeq ("$(SUSE)","0")
+    ifeq ($(SUSE),0)
       GLPATH    ?= /usr/X11R6/lib64
       GLLINK    ?= -L/usr/X11R6/lib64
       DFLT_PATH ?= /usr/lib64
     endif
-    ifeq ("$(FEDORA)","0")
+    ifeq ($(FEDORA),0)
       GLPATH    ?= /usr/lib64/nvidia
       GLLINK    ?= -L/usr/lib64/nvidia
       DFLT_PATH ?= /usr/lib64
     endif
-    ifeq ("$(RHEL)","0")
+    ifeq ($(RHEL),0)
       GLPATH    ?= /usr/lib64/nvidia
       GLLINK    ?= -L/usr/lib64/nvidia
       DFLT_PATH ?= /usr/lib64
     endif
-    ifeq ("$(CENTOS)","0")
+    ifeq ($(CENTOS),0)
       GLPATH    ?= /usr/lib64/nvidia
       GLLINK    ?= -L/usr/lib64/nvidia
       DFLT_PATH ?= /usr/lib64
@@ -100,7 +100,7 @@ ifeq ("$(TARGET_OS)","linux")
 
   EGLLIB  := $(shell find -L $(GLPATH) $(DFLT_PATH) -name libEGL.so    -print 2>/dev/null)
 
-  ifeq ("$(EGLLIB)","")
+  ifeq ($(EGLLIB),)
       $(info >>> WARNING - libEGL.so not found, please install libEGL.so <<<)
       SAMPLE_ENABLED := 0
   endif
@@ -113,11 +113,11 @@ ifeq ("$(TARGET_OS)","linux")
   EGLHEADER  := $(shell find -L $(HEADER_SEARCH_PATH) -name egl.h -print 2>/dev/null)
   EGLEXTHEADER  := $(shell find -L $(HEADER_SEARCH_PATH) -name eglext.h -print 2>/dev/null)
 
-  ifeq ("$(EGLHEADER)","")
+  ifeq ($(EGLHEADER),)
       $(info >>> WARNING - egl.h not found, please install egl.h <<<)
       SAMPLE_ENABLED := 0
   endif
-  ifeq ("$(EGLEXTHEADER)","")
+  ifeq ($(EGLEXTHEADER),)
       $(info >>> WARNING - eglext.h not found, please install eglext.h <<<)
       SAMPLE_ENABLED := 0
   endif

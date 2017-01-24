@@ -61,7 +61,7 @@ else
   endif
 
   CUDALIB ?= $(shell find -L $(CUDA_SEARCH_PATH) -maxdepth 1 -name libcuda.so)
-  ifeq ("$(CUDALIB)","")
+  ifeq ($(CUDALIB),)
     $(info >>> WARNING - libcuda.so not found, CUDA Driver is not installed.  Please re-install the driver. <<<)
     SAMPLE_ENABLED := 0
   endif

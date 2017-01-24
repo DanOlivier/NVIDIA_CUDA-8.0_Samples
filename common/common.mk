@@ -299,5 +299,7 @@ run: $$(TARGET_NAME)
 	@$$(TARGET_NAME)
 
 clean:
-	-@rm -fr $(TARGET_NAME) $(OBJ_DIR)
+	-rm -fr $$(TARGET_NAME) $(OBJ_DIR)
 endef
+
+clean:
