@@ -58,14 +58,7 @@ endif
 
 include $(TOP)/../../common/libCUDA.mk
 
-LIBSIZE :=
-ifneq ($(TARGET_OS),darwin)
-ifeq ($(TARGET_SIZE),64)
-LIBSIZE := 64
-endif
-endif
-
-LIBRARIES += -L$(CUDA_PATH)/lib$(LIBSIZE) -ldl
+LIBRARIES += -ldl
 
 ################################################################################
 

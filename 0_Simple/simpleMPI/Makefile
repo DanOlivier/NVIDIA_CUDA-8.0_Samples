@@ -81,14 +81,17 @@ endif
 endif
 endif
 
-LIBSIZE :=
+ifdef CUDA_PATH
 ifneq ($(TARGET_OS),darwin)
 ifeq ($(TARGET_SIZE),64)
 LIBSIZE := 64
 endif
 endif
 
-LIBRARIES += -L$(CUDA_PATH)/lib$(LIBSIZE) -lcudart
+LIBRARIES += -L$(CUDA_PATH)/lib$(LIBSIZE)
+endif
+
+LIBRARIES += -lcudart
 
 ################################################################################
 
