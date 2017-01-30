@@ -48,15 +48,6 @@ ifeq ($(TARGET_ARCH),aarch64)
   SAMPLE_ENABLED := 0
 endif
 
-ALL_LDFLAGS :=
-ALL_LDFLAGS += $(ALL_CCFLAGS)
-ALL_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
-ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
-
-# Common includes and paths for CUDA
-INCLUDES  := -I../../common/inc
-LIBRARIES :=
-
 ################################################################################
 
 ALL_CCFLAGS += -dc

@@ -185,11 +185,11 @@ SMS ?= 20 30 35 37 50 52 60
 # endif
 
 # Generate SASS code for each SM architecture listed in $(SMS)
-GENCODE_FLAGS ?= $(foreach sm,$(SMS),-gencode arch=compute_$(sm),code=sm_$(sm)) $(GENCODE_FLAGS_HIGHEST)
+GENCODE_FLAGS ?= $(if $(SMS),$(foreach sm,$(SMS),-gencode arch=compute_$(sm),code=sm_$(sm)) $(GENCODE_FLAGS_HIGHEST))
 
 # Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
 HIGHEST_SM = $(lastword $(sort $(SMS)))
-GENCODE_FLAGS_HIGHEST = -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
+GENCODE_FLAGS_HIGHEST = $(if $(HIGHEST_SM),-gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM))
 
 define SMS_ExcludeLessThan
 SMS_exclude := $$(shell for i in $(SMS); do if test $$$$i -lt $(1); then echo -n "$$$$i "; fi; done)
